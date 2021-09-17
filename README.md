@@ -18,3 +18,4 @@ python manage.py runserver
 
 ## 相关文档
 [django文档](https://docs.djangoproject.com/zh-hans/3.2/)
+[django文档](https://docs.djangoproject.com/zh-hans/3.2/)
