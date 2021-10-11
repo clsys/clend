@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from trade.utility import load_json
+from logging import CRITICAL
+from typing import Dict, Any
+from tzlocal import get_localzone
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'chanlun',
+    'trade',
 ]
 
 MIDDLEWARE = [
@@ -75,8 +81,12 @@ WSGI_APPLICATION = 'clend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': './clend/my.cnf',
+        },
     }
 }
 
@@ -123,3 +133,42 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SETTINGS: Dict[str, Any] = {
+    "font.family": "微软雅黑",
+    "font.size": 12,
+
+    "log.active": True,
+    "log.level": CRITICAL,
+    "log.console": True,
+    "log.file": True,
+
+    "email.server": "smtp.qq.com",
+    "email.port": 465,
+    "email.username": "",
+    "email.password": "",
+    "email.sender": "",
+    "email.receiver": "",
+
+    "datafeed.name": "",
+    "datafeed.username": "",
+    "datafeed.password": "",
+
+    "database.timezone": get_localzone().zone,
+    "database.name": "sqlite",
+    "database.database": "database.db",         # for sqlite, use this as filepath
+    "database.host": "localhost",
+    "database.port": 3306,
+    "database.user": "root",
+    "database.password": ""
+}
+
+# Load global setting from json file.
+SETTING_FILENAME: str = "setting.json"
+SETTINGS.update(load_json(SETTING_FILENAME))
+
+
+def get_settings(prefix: str = "") -> Dict[str, Any]:
+    prefix_length = len(prefix)
+    return {k[prefix_length:]: v for k, v in SETTINGS.items() if k.startswith(prefix)}
