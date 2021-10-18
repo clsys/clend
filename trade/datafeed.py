@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Optional, List
 from importlib import import_module
 
-from .object import HistoryRequest, TickData, BarData
+from object import HistoryRequest, TickData, BarData
 from clend.settings import SETTINGS
 
 class BaseDatafeed(ABC):

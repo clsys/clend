@@ -148,6 +148,7 @@ class Interval(Enum):
     """
     Interval of bar data.
     """
+    MINUTE = "1m"
     MINUTE1 = "1m"
     MINUTE5 = "1m"
     MINUTE15 = "1m"

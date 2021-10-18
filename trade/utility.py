@@ -4,7 +4,6 @@ General utility functions.
 
 import json
 import logging
-import sys
 from pathlib import Path
 from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
@@ -13,10 +12,8 @@ from math import floor, ceil
 import numpy as np
 import talib
 
-from clend.settings import BASE_DIR
 from .object import BarData, TickData
 from .constant import Exchange, Interval
-
 
 log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
@@ -36,66 +33,23 @@ def generate_vt_symbol(symbol: str, exchange: Exchange) -> str:
     return f"{symbol}.{exchange.value}"
 
 
-def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
-    """
-    Get path where trader is running in.
-    """
-    temp_path = BASE_DIR.joinpath(temp_name)
-    if not temp_path.exists():
-        temp_path.mkdir()
-    return BASE_DIR, temp_path
-
-
-TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
-sys.path.append(str(TRADER_DIR))
-
-
-def get_file_path(filename: str) -> Path:
-    """
-    Get path for temp file with filename.
-    """
-    return TEMP_DIR.joinpath(filename)
-
-
-def get_folder_path(folder_name: str) -> Path:
-    """
-    Get path for temp folder with folder name.
-    """
-    folder_path = TEMP_DIR.joinpath(folder_name)
-    if not folder_path.exists():
-        folder_path.mkdir()
-    return folder_path
-
-
-def get_icon_path(filepath: str, ico_name: str) -> str:
-    """
-    Get path for icon file with ico name.
-    """
-    ui_path = Path(filepath).parent
-    icon_path = ui_path.joinpath("ico", ico_name)
-    return str(icon_path)
-
-
-def load_json(filename: str) -> dict:
+def load_json(filepath: Path) -> dict:
     """
     Load data from json file in temp path.
     """
-    filepath = Path(filename)
-
     if filepath.exists():
         with open(filepath, mode="r", encoding="UTF-8") as f:
             data = json.load(f)
         return data
     else:
-        save_json(filename, {})
+        save_json(filepath, {})
         return {}
 
 
-def save_json(filename: str, data: dict) -> None:
+def save_json(filepath: Path, data: dict) -> None:
     """
     Save data into json file in temp path.
     """
-    filepath = Path(filename)
     with open(filepath, mode="w+", encoding="UTF-8") as f:
         json.dump(
             data,

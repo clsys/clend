@@ -19,7 +19,6 @@ from tzlocal import get_localzone
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -31,7 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,10 +39,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'chanlun',
     'trade',
 ]
 
+ASGI_APPLICATION = 'clend.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -75,7 +83,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'clend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -89,7 +96,6 @@ DATABASES = {
         },
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -109,7 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -123,7 +128,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
@@ -133,7 +137,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 SETTINGS: Dict[str, Any] = {
     "font.family": "微软雅黑",
@@ -157,7 +160,7 @@ SETTINGS: Dict[str, Any] = {
 
     "database.timezone": get_localzone().zone,
     "database.name": "sqlite",
-    "database.database": "database.db",         # for sqlite, use this as filepath
+    "database.database": "database.db",  # for sqlite, use this as filepath
     "database.host": "localhost",
     "database.port": 3306,
     "database.user": "root",
@@ -165,7 +168,7 @@ SETTINGS: Dict[str, Any] = {
 }
 
 # Load global setting from json file.
-SETTING_FILENAME: str = "setting.json"
+SETTING_FILENAME: Path = BASE_DIR.joinpath("clend").joinpath("setting.json")
 SETTINGS.update(load_json(SETTING_FILENAME))
 
 

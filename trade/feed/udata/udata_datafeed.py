@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from pytz import timezone
 
-from hs_udata import set_token, fut_quote_minute, stock_quote_minutes
+from hs_udata import set_token
+from hs_udata.apis.stock.api import fut_quote_minute, stock_quote_minutes
 from pandas import DataFrame
 
 from clend.settings import SETTINGS
@@ -11,25 +12,25 @@ from trade.object import BarData, HistoryRequest
 from trade.datafeed import BaseDatafeed
 
 EXCHANGE_VT2UDATA = {
-    Exchange.CFFEX: "CFE",
-    Exchange.SHFE: "SHF",
-    Exchange.DCE: "DCE",
-    Exchange.CZCE: "CZC",
-    Exchange.INE: "INE",
-    Exchange.SSE: "SH",
-    Exchange.SZSE: "SZ"
+    Exchange.CFFEX.value: "CFE",
+    Exchange.SHFE.value: "SHF",
+    Exchange.DCE.value: "DCE",
+    Exchange.CZCE.value: "CZC",
+    Exchange.INE.value: "INE",
+    Exchange.SSE.value: "SH",
+    Exchange.SZSE.value: "SZ"
 }
 
 INTERVAL_VT2RQ = {
-    Interval.MINUTE: "1m",
-    Interval.HOUR: "60m",
-    Interval.DAILY: "1d",
+    Interval.MINUTE.value: "1m",
+    Interval.HOUR.value: "60m",
+    Interval.DAILY.value: "1d",
 }
 
 INTERVAL_ADJUSTMENT_MAP = {
-    Interval.MINUTE: timedelta(minutes=1),
-    Interval.HOUR: timedelta(hours=1),
-    Interval.DAILY: timedelta()  # no need to adjust for daily bar
+    Interval.MINUTE.value: timedelta(minutes=1),
+    Interval.HOUR.value: timedelta(hours=1),
+    Interval.DAILY.value: timedelta()  # no need to adjust for daily bar
 }
 
 CHINA_TZ = timezone("Asia/Shanghai")
@@ -62,22 +63,22 @@ class UdataDatafeed(BaseDatafeed):
             self.init()
 
         # 只支持分钟线
-        if req.interval != Interval.MINUTE:
+        if req.interval.value != Interval.MINUTE.value:
             return None
 
         # 期货
-        if req.exchange in {
-            Exchange.CFFEX,
-            Exchange.SHFE,
-            Exchange.CZCE,
-            Exchange.DCE,
-            Exchange.INE
+        if req.exchange.value in {
+            Exchange.CFFEX.value,
+            Exchange.SHFE.value,
+            Exchange.CZCE.value,
+            Exchange.DCE.value,
+            Exchange.INE.value
         }:
             return self.query_futures_bar_history(req)
         # 股票
-        elif req.exchange in {
-            Exchange.SSE,
-            Exchange.SZSE
+        elif req.exchange.value in {
+            Exchange.SSE.value,
+            Exchange.SZSE.value
         }:
             return self.query_equity_bar_history(req)
         # 其他
@@ -92,7 +93,7 @@ class UdataDatafeed(BaseDatafeed):
         start = req.start
         end = req.end
 
-        udata_symbol = convert_symbol(symbol, exchange)
+        udata_symbol = convert_symbol(symbol, exchange.value)
         adjustment = timedelta(minutes=1)
 
         df: DataFrame = fut_quote_minute(

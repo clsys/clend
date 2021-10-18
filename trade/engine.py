@@ -11,6 +11,8 @@ from typing import Any, Sequence, Type, Dict, List, Optional
 from constant import EventType
 from trade.event import Event, EventEngine
 from trade.gateway import BaseGateway
+from pathlib import Path
+from clend.settings import BASE_DIR
 from .object import (
     CancelRequest,
     LogData,
@@ -27,7 +29,6 @@ from .object import (
     Exchange
 )
 from clend.settings import SETTINGS
-from .utility import get_folder_path, TRADER_DIR
 
 
 class BaseApp(ABC):
@@ -57,7 +58,7 @@ class MainEngine:
         self.apps: Dict[str, BaseApp] = {}
         self.exchanges: List[Exchange] = []
 
-        os.chdir(TRADER_DIR)  # Change working directory
+        os.chdir(BASE_DIR)  # Change working directory
         self.init_engines()  # Initialize function engines
 
     def add_engine(self, engine_class: Any) -> "BaseEngine":
@@ -302,7 +303,7 @@ class LogEngine(BaseEngine):
         """
         today_date = datetime.now().strftime("%Y%m%d")
         filename = f"vt_{today_date}.log"
-        log_path = get_folder_path("log")
+        log_path = BASE_DIR.joinpath("log")
         file_path = log_path.joinpath(filename)
 
         file_handler = logging.FileHandler(
