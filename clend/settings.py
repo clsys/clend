@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-*qcjo))@=x$ip2#74q_fbs!-douazvz6^)%pjop#6(l+rdr$^v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.197.1', 'localhost', '192.168.197.129', '0.0.0.0']
+ALLOWED_HOSTS = ['192.168.197.1', 'localhost', '192.168.197.129', '0.0.0.0', '127.0.0.1', '10.28.239.80']
 
 # Application definition
 
@@ -39,9 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
+    'apscheduler',
     'channels',
     'chanlun',
     'trade',
+    'user',
+    'chart',
 ]
 
 ASGI_APPLICATION = 'clend.asgi.application'
@@ -61,7 +65,39 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:9527',
+    'http://10.28.239.80:8000',
+    'http://localhost:9527',
+)
+
+CORS_ALLOW_CREDENTIALS = True  # 指明在跨域访问中，后端是否支持对cookie的操作。
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'Pragma',
+)
 
 ROOT_URLCONF = 'clend.urls'
 
@@ -92,7 +128,7 @@ DATABASES = {
         # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
-            'read_default_file': './clend/my.cnf',
+            'read_default_file': './clend/my123.cnf',
         },
     }
 }
@@ -126,7 +162,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

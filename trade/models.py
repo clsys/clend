@@ -5,7 +5,7 @@ from django.db import models
 class Trade(models.Model):
     id = models.AutoField(primary_key=True)
     userid = models.CharField(max_length=90)
-    stock_id = models.CharField(max_length=10)
+    stock_id = models.CharField(max_length=20)
     trade_type = models.CharField(max_length=10)
     type = models.CharField(max_length=2)
     trade_time = models.DateTimeField(auto_now_add=True)
@@ -20,13 +20,13 @@ class Trade(models.Model):
     order_id = models.IntegerField()
 
     class Meta:
-        db_table = 'cl_trade'
+        db_table = 'cs_trade'
 
 
 class Gain(models.Model):
     id = models.AutoField(primary_key=True)
     userid = models.CharField(max_length=90)
-    stock_id = models.CharField(max_length=10)
+    stock_id = models.CharField(max_length=20)
     trade_type = models.CharField(max_length=10)
     origin_position = models.IntegerField()
     origin_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -39,7 +39,7 @@ class Gain(models.Model):
     order_id = models.IntegerField()
 
     class Meta:
-        db_table = 'cl_gain'
+        db_table = 'cs_gain'
 
 
 class UserSub(models.Model):
@@ -50,7 +50,7 @@ class UserSub(models.Model):
     order_id = models.IntegerField()
 
     class Meta:
-        db_table = 'cl_user_sub'
+        db_table = 'cs_user_sub'
 
 
 class Log(models.Model):
@@ -60,4 +60,4 @@ class Log(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'cl_log'
+        db_table = 'cs_log'

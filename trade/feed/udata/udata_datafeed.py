@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 from pytz import timezone
-
 from hs_udata import set_token
-from hs_udata.apis.stock.api import fut_quote_minute, stock_quote_minutes
+from hs_udata.apis.stock.api import *
 from pandas import DataFrame
 
 from clend.settings import SETTINGS
@@ -47,9 +46,11 @@ class UdataDatafeed(BaseDatafeed):
 
     def __init__(self):
         """"""
+        self.inited = False
         self.token: str = SETTINGS["datafeed.password"]
-
         self.inited: bool = False
+        if not self.inited:
+            self.init()
 
     def init(self) -> bool:
         """初始化"""
@@ -164,10 +165,40 @@ class UdataDatafeed(BaseDatafeed):
                     low_price=row.low,
                     close_price=row.close,
                     volume=row.turnover_volume,
-                    turnover=row.turnover_value,
-                    gateway_name="UDATA"
                 )
 
                 data.append(bar)
 
         return data
+
+    def query_stock_bars(self, req: HistoryRequest) -> Optional[List[BarData]]:
+        """查询股票分钟K线数据"""
+        symbol = req.symbol
+        exchange = req.exchange
+        interval = req.interval
+        start = req.start
+        end = req.end
+
+        adjustment = timedelta(minutes=1)
+
+        df: DataFrame = stock_quote_minutes(
+            en_prod_code=symbol,
+            begin_date=start.strftime("%Y-%m-%d"),
+            end_date=end.strftime("%Y-%m-%d")
+        )
+        # order = ['date', 'change_pct', 'high', 'turnover_volume', 'low', 'change', 'turnover_value', 'time', 'close',
+        #          'open']
+        order = ['date', 'time', 'open', 'close', 'high', 'low', 'turnover_volume']
+        df = df[order]
+        print(len(df.values))
+        print(df)
+        return df.values.tolist()
+
+    def query_all_securities(self, date=None):
+        df: DataFrame = stock_list(
+            listed_state='1',
+            fields='hs_code,secu_abbr,chi_name,listed_state'
+        )
+        order = ['hs_code', 'secu_abbr', 'chi_name', 'listed_state']
+        df = df[order]
+        return df.values[1:]

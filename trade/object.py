@@ -77,7 +77,7 @@ class TickData(BaseData):
 
 
 @dataclass
-class BarData(BaseData):
+class BarData:
     """
     Candlestick bar data of a certain trading period.
     """
