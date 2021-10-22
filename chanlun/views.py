@@ -111,15 +111,22 @@ def get_all_securities(request):
 
 bsset = set()
 cur = str(datetime.now().date())
-start = datetime.strptime(str(datetime.now().date()) + " 9:30", '%Y-%m-%d %H:%M')
-end = datetime.strptime(str(datetime.now().date()) + " 15:00", '%Y-%m-%d %H:%M')
+start_sw = datetime.strptime(str(datetime.now().date()) + " 9:30", '%Y-%m-%d %H:%M')
+end_sw = datetime.strptime(str(datetime.now().date()) + " 11:30", '%Y-%m-%d %H:%M')
+
+start_xw = datetime.strptime(str(datetime.now().date()) + " 13:00", '%Y-%m-%d %H:%M')
+end_xw = datetime.strptime(str(datetime.now().date()) + " 15:00", '%Y-%m-%d %H:%M')
 inited = False
 
 
+def get_last_to_now_point():
+    start_t = datetime.now().date() - timedelta(days=1)
+    return Point.objects.filter(point__gt=start_t)
+
+
 def check_bs():
-    global bsset, start, end, inited
-    start_t = datetime.now() - timedelta(hours=24)
-    query = Point.objects.filter(point__gt=start_t)
+    global bsset, inited
+    query = get_last_to_now_point()
     cur_set = set()
     last = None
     for i in query:
@@ -165,6 +172,7 @@ def get_cur_gain(userid):
 
 
 def buy_sell(gain, bs, unit, bar, type):
+    global start_sw, end_sw, start_xw, end_xw
     trade = Trade()
     trade.userid = gain.userid
     trade.stock_id = bs.stock_id
@@ -178,7 +186,10 @@ def buy_sell(gain, bs, unit, bar, type):
     trade.total_money = decimal.Decimal(bar.close * unit)
     trade.origin_funds = gain.cur_funds
     trade.before_position = gain.cur_position
-
+    if not ((start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)):
+        bs_time = bs.point.strftime('%Y-%m-%d %H:%M:%S')
+        trade.is_success = 'N'
+        trade.reason = f'买卖点有误，时间：{bs_time},不在有效时间范围内，不能交易'
     trade.is_success = 'Y'
     if type == 'buy':
         trade.cur_funds = gain.cur_funds - trade.total_money
@@ -229,14 +240,21 @@ def trade():
 
 
 def task():
-    global bsset, start, end, cur
+    global bsset, start_sw, end_sw, start_xw, end_xw, cur
     now = datetime.now()
     now_str = str(now.date())
     if cur != now_str:
-        start = datetime.strptime(now_str + " 9:30", '%Y-%m-%d %H:%M')
-        end = datetime.strptime(now_str + " 15:00", '%Y-%m-%d %H:%M')
-        bsset.clear()
-    if now >= start and now <= end:
+        start_sw = datetime.strptime(now_str + " 9:30", '%Y-%m-%d %H:%M')
+        end_sw = datetime.strptime(now_str + " 11:30", '%Y-%m-%d %H:%M')
+        start_xw = datetime.strptime(now_str + " 13:00", '%Y-%m-%d %H:%M')
+        end_xw = datetime.strptime(now_str + " 15:00", '%Y-%m-%d %H:%M')
+        cur = now_str
+        query = get_last_to_now_point()
+        cur_set = set()
+        for i in query:
+            cur_set.add(i)
+
+    if (start_sw <= now <= end_sw) or (start_xw <= now <= end_xw):
         trade()
 
 
