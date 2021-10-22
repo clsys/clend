@@ -17,7 +17,7 @@ FOR /F "delims=~" %f in (requirements.txt) DO conda install --yes "%f" #这个�
 
 ### 下面两个配置
 #### Mysql配置
-在settings。py中找到
+在settings.py中找到
 
 ````python
 DATABASES = {
@@ -42,7 +42,7 @@ password = root
 default-character-set = utf8
 ````
 #### gateway连接配置
-在settings。py中找到
+在settings.py中找到
 ````python
 SETTING_FILENAME: Path = BASE_DIR.joinpath("clend").joinpath("setting.json")
 ````
