@@ -2,7 +2,6 @@ importlib_metadata==4.8.1
 channels==3.0.4
 pyecharts==1.9.0
 transitions==0.8.10
-numpy==1.21.2
 tzlocal==2.0.0
 Django==3.2.5
 TA_Lib==0.4.21
