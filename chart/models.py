@@ -34,6 +34,7 @@ class Gain(models.Model):
     origin_position = models.IntegerField(null=True)
     origin_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     cur_position = models.IntegerField(null=True)
+    today_position = models.IntegerField(null=True)
     cur_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     origin_funds = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     cur_funds = models.DecimalField(max_digits=10, decimal_places=2, null=True)

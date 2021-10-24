@@ -4,7 +4,7 @@ from chart.constant import freq_map
 
 
 class BarFromDb:
-    def get_latest_1m_bar(self, freq, symbol):
+    def get_latest_bar(self, freq, symbol):
         with connection.cursor() as cursor:
             cursor.execute(f"SELECT * FROM 600809_XSHG_{freq} order by Date desc limit 0,1")
             res = cursor.fetchone()

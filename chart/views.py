@@ -138,7 +138,7 @@ def chan(request):
 def query(request):
     return HttpResponse(bfd.get(request.GET['freq']))
 
-
+# http://10.28.239.80:8000/chart/new_gain?userid=666&stock_id=600809.SH&trade_type=realtime
 def new_gain(request):
     return HttpResponse(
         service.create_new_gain(request.GET['userid'], request.GET['stock_id'], request.GET['trade_type']))

@@ -116,7 +116,11 @@ end_sw = datetime.strptime(str(datetime.now().date()) + " 11:30", '%Y-%m-%d %H:%
 
 start_xw = datetime.strptime(str(datetime.now().date()) + " 13:00", '%Y-%m-%d %H:%M')
 end_xw = datetime.strptime(str(datetime.now().date()) + " 15:00", '%Y-%m-%d %H:%M')
+# 每天初始化flag
 inited = False
+
+user_list = ['1m', '5m', '15m', '30m', '60m', '1d']
+symbol_list = ['600809.XSHG']
 
 
 def get_last_to_now_point():
@@ -149,19 +153,24 @@ def check_bs():
 
 
 def update_gain(gain, trade, bar, type):
-    gain.origin_funds = gain.cur_funds
-    gain.origin_position = gain.cur_position
-    gain.origin_price = gain.cur_price
     gain.cur_price = bar.close
     if type == 'buy':
-        gain.cur_position = gain.cur_position + trade.unit
+        gain.today_position = gain.today_position + trade.unit
         gain.cur_funds = gain.cur_funds - trade.cur_funds
 
-    else:
-        gain.cur_position = gain.cur_position + trade.unit
+    elif type == 'sell':
+        gain.cur_position = gain.cur_position - trade.unit
         gain.cur_funds = gain.cur_funds + trade.cur_funds
 
-    gain.current_equity = gain.cur_funds + decimal.Decimal(bar.close * gain.cur_position) - gain.origin_funds
+    gain.current_equity = gain.cur_funds + decimal.Decimal(
+        gain.cur_price * (gain.cur_position + gain.today_position)) - gain.origin_funds - decimal.Decimal(
+        gain.origin_position * gain.origin_price)
+    gain.save()
+
+
+def update_last_position(gain):
+    gain.cur_position = gain.cur_position + gain.today_position
+    gain.today_position = 0
     gain.save()
 
 
@@ -184,7 +193,6 @@ def buy_sell(gain, bs, unit, bar, type):
     trade.trade_price = bar.close
     trade.unit = unit * 100
     trade.total_money = decimal.Decimal(bar.close * unit)
-    trade.origin_funds = gain.cur_funds
     trade.before_position = gain.cur_position
     if not ((start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)):
         bs_time = bs.point.strftime('%Y-%m-%d %H:%M:%S')
@@ -211,39 +219,68 @@ def buy_sell(gain, bs, unit, bar, type):
         update_gain(gain, trade, bar, type)
 
 
-def trade():
-    symbol = '600809.XSHG'
-    userid = '666'
-    gain = get_cur_gain(userid)
-    lbar = bfd.get_latest_1m_bar('1m', symbol)
+match = {'1分钟': '1m', '5分钟': '5m', '15分钟': '15m', '30分钟': '30m', '60分钟': '60m', '1天': '1d', '日线': '1d'}
+
+
+def trade(gain, symbol, bar):
     bs = check_bs()
+    update_gain(gain, None, bar, None)
+    # 无买卖点
     if not bs:
+        return
+    # 当前级别和买卖点级别不匹配
+    if not gain.userid.startswith(match[bs.level]):
         return
     if bs.type == 'B1':
         factor = decimal.Decimal('0.01')
-        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(lbar.close)), lbar, 'buy')
+        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')), bar,
+                 'buy')
     if bs.type == 'B2':
         factor = decimal.Decimal('0.02')
-        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(lbar.close)), lbar, 'buy')
+        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')), bar,
+                 'buy')
     if bs.type == 'B3':
         factor = decimal.Decimal('0.02')
-        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(lbar.close)), lbar, 'buy')
+        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')), bar,
+                 'buy')
     if bs.type == 'S1':
         factor = decimal.Decimal('0.01')
-        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(lbar.close)), lbar, 'sell')
+        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')), bar,
+                 'sell')
     if bs.type == 'S2':
         factor = decimal.Decimal('0.02')
-        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(lbar.close)), lbar, 'sell')
+        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')), bar,
+                 'sell')
     if bs.type == 'S3':
         factor = decimal.Decimal('0.02')
-        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(lbar.close)), lbar, 'sell')
+        buy_sell(gain, bs, int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')), bar,
+                 'sell')
+
+
+# 系统只初始化一次
+def init_sys():
+    global user_list, symbol_list
+    for symbol in symbol_list:
+        for user in user_list:
+            gain = get_cur_gain(user + "." + symbol)
+            bar = bfd.get_latest_bar(user, symbol)
+            if gain and not gain.cur_funds and not gain.cur_position:
+                gain.cur_funds = gain.origin_funds
+                gain.cur_position = gain.origin_position
+                gain.origin_price = bar.close
+                gain.cur_price = bar.close
+                gain.save()
+
+
+init_sys()
 
 
 def task():
-    global bsset, start_sw, end_sw, start_xw, end_xw, cur
+    global bsset, start_sw, end_sw, start_xw, end_xw, cur, user_list, symbol_list
     now = datetime.now()
     now_str = str(now.date())
     if cur != now_str:
+        # 每天更新买卖点集合
         start_sw = datetime.strptime(now_str + " 9:30", '%Y-%m-%d %H:%M')
         end_sw = datetime.strptime(now_str + " 11:30", '%Y-%m-%d %H:%M')
         start_xw = datetime.strptime(now_str + " 13:00", '%Y-%m-%d %H:%M')
@@ -254,8 +291,19 @@ def task():
         for i in query:
             cur_set.add(i)
 
+        # 将昨天的仓位更新到今天
+        for symbol in symbol_list:
+            for user in user_list:
+                gain = get_cur_gain(user + "." + symbol)
+                update_last_position(gain)
+
+    # 交易时间进行交易
     if (start_sw <= now <= end_sw) or (start_xw <= now <= end_xw):
-        trade()
+        for symbol in symbol_list:
+            for user in user_list:
+                gain = get_cur_gain(user + "." + symbol)
+                bar = bfd.get_latest_bar(user, symbol)
+                trade(gain, symbol, bar)
 
 
 from apscheduler.schedulers.background import BackgroundScheduler

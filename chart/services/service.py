@@ -7,13 +7,12 @@ class Service:
         query = Gain.objects.filter(userid=userid)
         if query:
             return False
-        gain.userid = userid
+        gain.userid = userid + "." + stock_id
         gain.trade_type = trade_type
         gain.stock_id = stock_id
-        gain.cur_funds = 10000000
-        gain.origin_funds = 0
-        gain.cur_position = 0
-        gain.origin_position = 0
+        gain.origin_funds = 10000000
+        gain.origin_position = 1000
+        gain.today_position = 0
         gain.save()
         return True
 
