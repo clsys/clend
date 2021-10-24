@@ -82,7 +82,7 @@ python manage.py runserver
 ````
 ### docker 运行
 ````shell
-docker run -d hhvssqg/clend:latest
+docker run -d --name clend -p 8000:8000 -v setting.json:/usr/src/app/setting.json -v my123.cnf:/usr/src/app/my123.cnf hhvssqg/clend:0.1
 ````
 
 ## 相关文档
