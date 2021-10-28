@@ -116,7 +116,7 @@ start_sw = datetime.strptime(str(datetime.now().date()) + " 9:30", '%Y-%m-%d %H:
 end_sw = datetime.strptime(str(datetime.now().date()) + " 11:30", '%Y-%m-%d %H:%M')
 
 start_xw = datetime.strptime(str(datetime.now().date()) + " 13:00", '%Y-%m-%d %H:%M')
-end_xw = datetime.strptime(str(datetime.now().date()) + " 23:00", '%Y-%m-%d %H:%M')
+end_xw = datetime.strptime(str(datetime.now().date()) + " 15:00", '%Y-%m-%d %H:%M')
 # 每天初始化flag
 inited = False
 
@@ -202,15 +202,6 @@ def check_bs(gain):
 
     mp[valid_key] = cur_set
     mp[invalid_key] = cur_invalid_set
-
-    # print("bsset")
-    # print(bsset)
-    # print("invalid_bsset")
-    # print(invalid_bsset)
-    # print("mp[valid_key]")
-    # print(mp[valid_key])
-    # print("mp[invalid_key]")
-    # print(mp[invalid_key])
     return bs_list, invalid_bs_list
 
 
@@ -266,7 +257,7 @@ def buy_sell(gain, bs, unit, bar, type):
         else:
             trade.type = bs.type.replace('B', 'S')
 
-    if not bs.invalid_time and not ((start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)):
+    if not bs.invalid_time and not ((start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)) and bs.level=='1分钟':
         bs_time = bs.point.strftime('%Y-%m-%d %H:%M:%S')
         trade.is_success = 'N'
         trade.reason = f'买卖点有误，时间：{bs_time},不在有效时间范围内，不能交易'
