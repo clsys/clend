@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 from trade.utility import load_json
 from logging import CRITICAL
@@ -28,8 +28,7 @@ SECRET_KEY = 'django-insecure-*qcjo))@=x$ip2#74q_fbs!-douazvz6^)%pjop#6(l+rdr$^v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.197.1', 'localhost', '192.168.197.129', '0.0.0.0', '127.0.0.1', '10.28.239.80',
-                 '10.112.169.65']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -177,6 +176,50 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'default': {
+#             'format': '[DJANGO] %(levelname)s %(asctime)s %(module)s '
+#                       '%(name)s.%(funcName)s:%(lineno)s: %(message)s'
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'default',
+#         }
+#     },
+#     'loggers': {
+#         '*': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         }
+#     },
+# }
+LOG_ROOT = os.path.join(BASE_DIR, 'logs')
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/debug.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
 
 SETTINGS: Dict[str, Any] = {
     "font.family": "微软雅黑",

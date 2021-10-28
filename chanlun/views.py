@@ -13,6 +13,8 @@ from clend.utils import handle_db_connections
 
 data = Data()
 
+import logging
+logger = logging.getLogger('django')
 
 def init(request):
     gain = Gain()
@@ -166,38 +168,38 @@ def check_bs(gain):
     if bsset == None:
         l_point = list(cur_set)
         l_point.sort(key=lambda x: x.point)
-        print(f"#########################{gain.userid}-valid: inited#########################")
+        logger.info(f"#########################{gain.userid}-valid: inited#########################")
         for i in l_point:
-            print(i.stock_id + ":" + i.point.strftime('%Y-%m-%d %H:%M') + ":" + i.level + ":" + i.type)
-        print(f"#########################{gain.userid}-valid: inited#########################")
+            logger.info(i.stock_id + ":" + i.point.strftime('%Y-%m-%d %H:%M') + ":" + i.level + ":" + i.type)
+        logger.info(f"#########################{gain.userid}-valid: inited#########################")
     else:
         bs_diff = cur_set - bsset
         bs_list = list(bs_diff)
         bs_list.sort(key=lambda x: x.point)
         for last in bs_list:
-            print("valid_bs: " + last.stock_id + ":" + last.point.strftime(
+            logger.info("valid_bs: " + last.stock_id + ":" + last.point.strftime(
                 '%Y-%m-%d %H:%M') + ":" + last.level + ":" + last.type)
 
     if invalid_bsset == None:
         l_point = list(cur_invalid_set)
         l_point.sort(key=lambda x: x.point)
-        print(f"#########################{gain.userid}-invalid: inited#########################")
+        logger.info(f"#########################{gain.userid}-invalid: inited#########################")
         for i in l_point:
-            print(i.stock_id + ":" + i.point.strftime('%Y-%m-%d %H:%M') + ":" + i.level + ":" + i.type)
-        print(f"#########################{gain.userid}-invalid: inited#########################")
+            logger.info(i.stock_id + ":" + i.point.strftime('%Y-%m-%d %H:%M') + ":" + i.level + ":" + i.type)
+        logger.info(f"#########################{gain.userid}-invalid: inited#########################")
     else:
         invalid_bs_diff = cur_invalid_set - invalid_bsset
         cur_invalid_list = list(cur_invalid_set)
         cur_invalid_list.sort(key=lambda x: x.point)
-        print(cur_invalid_list)
+        logger.info(cur_invalid_list)
         invalid_bsset_list = list(invalid_bsset)
         invalid_bsset_list.sort(key=lambda x: x.point)
-        print(invalid_bsset_list)
+        logger.info(invalid_bsset_list)
 
         invalid_bs_list = list(invalid_bs_diff)
         invalid_bs_list.sort(key=lambda x: x.point)
         for last in invalid_bs_list:
-            print("invalid_bs: " + last.stock_id + ":" + last.point.strftime(
+            logger.info("invalid_bs: " + last.stock_id + ":" + last.point.strftime(
                 '%Y-%m-%d %H:%M') + ":" + last.level + ":" + last.type)
 
     mp[valid_key] = cur_set
@@ -380,7 +382,7 @@ def init_sys():
                 gain.cur_price = bar.close
                 gain.save()
     end = datetime.now()
-    print('init sys takes time: ' + str(end - start))
+    logger.info('init sys takes time: ' + str(end - start))
 
 
 init_sys()
