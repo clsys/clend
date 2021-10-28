@@ -58,14 +58,18 @@ class Point(models.Model):
     low = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
     def __hash__(self):
-        return hash(self.stock_id + self.level + self.point.strftime('%Y-%m-%d %H:%M') + self.type)
+        return hash((self.stock_id, self.level, self.point.strftime('%Y-%m-%d %H:%M'), self.type))
+
+    def __repr__(self):
+        return f'point: {self.stock_id}, {self.level}, {self.point}, {self.type}'
 
     def __eq__(self, other):
-        if self.level == other.level and self.stock_id == other.stock_id and self.point.strftime(
-                '%Y-%m-%d %H:%M') == other.point.strftime('%Y-%m-%d %H:%M') and self.type == other.type:
-            return True
-        else:
-            return False
+        return self.level == other.level and self.stock_id == other.stock_id and self.point.strftime(
+            '%Y-%m-%d %H:%M') == other.point.strftime('%Y-%m-%d %H:%M') and self.type == other.type
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     class Meta:
-        db_table = 'cl_point_result'
+        # db_table = 'cl_point_result'
+        db_table = 'cl_ptest'

@@ -116,7 +116,7 @@ start_sw = datetime.strptime(str(datetime.now().date()) + " 9:30", '%Y-%m-%d %H:
 end_sw = datetime.strptime(str(datetime.now().date()) + " 11:30", '%Y-%m-%d %H:%M')
 
 start_xw = datetime.strptime(str(datetime.now().date()) + " 13:00", '%Y-%m-%d %H:%M')
-end_xw = datetime.strptime(str(datetime.now().date()) + " 15:00", '%Y-%m-%d %H:%M')
+end_xw = datetime.strptime(str(datetime.now().date()) + " 23:00", '%Y-%m-%d %H:%M')
 # 每天初始化flag
 inited = False
 
@@ -146,10 +146,10 @@ def check_bs(gain):
     bsset = None
     invalid_bsset = None
     valid_key = gain.userid + '-valid'
-    invalid_key = gain.userid + '-valid'
+    invalid_key = gain.userid + '-invalid'
     if valid_key in mp.keys():
         bsset = mp[valid_key]
-    if valid_key in mp.keys():
+    if invalid_key in mp.keys():
         invalid_bsset = mp[invalid_key]
 
     query = get_last_to_now_point(gain)
@@ -163,7 +163,7 @@ def check_bs(gain):
     for i in query:
         if not i.invalid_time and not cur_invalid_set.__contains__(i):
             cur_set.add(i)
-    if not bsset:
+    if bsset == None:
         l_point = list(cur_set)
         l_point.sort(key=lambda x: x.point)
         print(f"#########################{gain.userid}-valid: inited#########################")
@@ -178,7 +178,7 @@ def check_bs(gain):
             print("valid_bs: " + last.stock_id + ":" + last.point.strftime(
                 '%Y-%m-%d %H:%M') + ":" + last.level + ":" + last.type)
 
-    if not invalid_bsset:
+    if invalid_bsset == None:
         l_point = list(cur_invalid_set)
         l_point.sort(key=lambda x: x.point)
         print(f"#########################{gain.userid}-invalid: inited#########################")
@@ -187,18 +187,30 @@ def check_bs(gain):
         print(f"#########################{gain.userid}-invalid: inited#########################")
     else:
         invalid_bs_diff = cur_invalid_set - invalid_bsset
+        cur_invalid_list = list(cur_invalid_set)
+        cur_invalid_list.sort(key=lambda x: x.point)
+        print(cur_invalid_list)
+        invalid_bsset_list = list(invalid_bsset)
+        invalid_bsset_list.sort(key=lambda x: x.point)
+        print(invalid_bsset_list)
+
         invalid_bs_list = list(invalid_bs_diff)
         invalid_bs_list.sort(key=lambda x: x.point)
         for last in invalid_bs_list:
-            if last.type.startswith('S'):
-                last.type = last.type.replace('S', 'B')
-            else:
-                last.type = last.type.replace('B', 'S')
-            print("valid_bs: " + last.stock_id + ":" + last.point.strftime(
+            print("invalid_bs: " + last.stock_id + ":" + last.point.strftime(
                 '%Y-%m-%d %H:%M') + ":" + last.level + ":" + last.type)
 
     mp[valid_key] = cur_set
     mp[invalid_key] = cur_invalid_set
+
+    # print("bsset")
+    # print(bsset)
+    # print("invalid_bsset")
+    # print(invalid_bsset)
+    # print("mp[valid_key]")
+    # print(mp[valid_key])
+    # print("mp[invalid_key]")
+    # print(mp[invalid_key])
     return bs_list, invalid_bs_list
 
 
@@ -248,6 +260,12 @@ def buy_sell(gain, bs, unit, bar, type):
     trade.before_position = gain.cur_position
     trade.origin_funds = trade.cur_funds
     trade.is_success = 'Y'
+    if bs.invalid_time:
+        if bs.type.startswith('S'):
+            trade.type = bs.type.replace('S', 'B')
+        else:
+            trade.type = bs.type.replace('B', 'S')
+
     if not bs.invalid_time and not ((start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)):
         bs_time = bs.point.strftime('%Y-%m-%d %H:%M:%S')
         trade.is_success = 'N'
