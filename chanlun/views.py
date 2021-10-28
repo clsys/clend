@@ -257,7 +257,8 @@ def buy_sell(gain, bs, unit, bar, type):
         else:
             trade.type = bs.type.replace('B', 'S')
 
-    if not bs.invalid_time and not ((start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)) and bs.level=='1分钟':
+    if not bs.invalid_time and not (
+            (start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)) and bs.level == '1分钟':
         bs_time = bs.point.strftime('%Y-%m-%d %H:%M:%S')
         trade.is_success = 'N'
         trade.reason = f'买卖点有误，时间：{bs_time},不在有效时间范围内，不能交易'
