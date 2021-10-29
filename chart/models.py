@@ -21,6 +21,7 @@ class Trade(models.Model):
     before_position = models.IntegerField(null=True)
     is_success = models.CharField(max_length=1, default='Y', null=True)
     reason = models.CharField(max_length=90, null=True)
+    fee = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
     class Meta:
         db_table = 'cl_trade'
@@ -71,5 +72,5 @@ class Point(models.Model):
         return not self.__eq__(other)
 
     class Meta:
-        # db_table = 'cl_point_result'
-        db_table = 'cl_ptest'
+        db_table = 'cl_point_result'
+        # db_table = 'cl_ptest'

@@ -14,7 +14,9 @@ from clend.utils import handle_db_connections
 data = Data()
 
 import logging
+
 logger = logging.getLogger('django')
+
 
 def init(request):
     gain = Gain()
@@ -140,6 +142,7 @@ def get_last_to_now_point(gain):
     start_t = datetime.now().date() - timedelta(days=match_days[list_freq_stock_id[0]])
     query = Point.objects.filter(
         Q(stock_id=list_freq_stock_id[1]) & Q(point__gt=start_t) & Q(level=match_point[list_freq_stock_id[0]]))
+
     return query
 
 
@@ -250,14 +253,17 @@ def buy_sell(gain, bs, unit, bar, type):
     trade.trade_price = bar.close
     trade.unit = unit * 100
     trade.total_money = decimal.Decimal(bar.close * trade.unit)
+    if trade.unit > 1000:
+        trade.fee = decimal.Decimal(trade.unit * 0.0002)
+    else:
+        trade.fee = decimal.Decimal(1.0)
+    yj = trade.total_money * 0.0003
+    if yj < 5.0:
+        yj = 5
+    trade.fee += decimal.Decimal(yj)
     trade.before_position = gain.cur_position
     trade.origin_funds = trade.cur_funds
     trade.is_success = 'Y'
-    if bs.invalid_time:
-        if bs.type.startswith('S'):
-            trade.type = bs.type.replace('S', 'B')
-        else:
-            trade.type = bs.type.replace('B', 'S')
 
     if not bs.invalid_time and not (
             (start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)) and bs.level == '1分钟':
@@ -265,13 +271,14 @@ def buy_sell(gain, bs, unit, bar, type):
         trade.is_success = 'N'
         trade.reason = f'买卖点有误，时间：{bs_time},不在有效时间范围内，不能交易'
     if type == 'buy':
-        trade.cur_funds = gain.cur_funds - trade.total_money
+        trade.cur_funds = gain.cur_funds - trade.total_money - trade.fee
         if trade.cur_funds < 0:
             trade.is_success = 'N'
             trade.reason = f'资金不足: {trade.cur_funds}，买单无法交易'
         trade.after_position = gain.cur_position + gain.today_position + trade.unit
     else:
-        trade.cur_funds = gain.cur_funds + trade.total_money
+        trade.fee += trade.total_money * decimal.Decimal(0.001)
+        trade.cur_funds = gain.cur_funds + trade.total_money - trade.fee
         trade.after_position = gain.cur_position - trade.unit
         if trade.after_position < 0:
             trade.is_success = 'N'
@@ -324,40 +331,45 @@ def trade(gain, symbol, bar):
                      bar,
                      'sell')
     for invalid_bs in invalid_bs_list:
+        invalid_bs_type = None
+        if invalid_bs.type.startswith('S'):
+            invalid_bs_type = invalid_bs.type.replace('S', 'B')
+        else:
+            invalid_bs_type = invalid_bs.type.replace('B', 'S')
         # 当前级别和买卖点级别不匹配
         if not gain.userid.startswith(match[invalid_bs.level]):
             return
-        if invalid_bs.type == 'B1':
+        if invalid_bs_type == 'B1':
             factor = decimal.Decimal('0.01')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'sell')
-        if invalid_bs.type == 'B2':
+        if invalid_bs_type == 'B2':
             factor = decimal.Decimal('0.02')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'sell')
-        if invalid_bs.type == 'B3':
+        if invalid_bs_type == 'B3':
             factor = decimal.Decimal('0.02')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'sell')
-        if invalid_bs.type == 'S1':
+        if invalid_bs_type == 'S1':
             factor = decimal.Decimal('0.01')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'buy')
-        if invalid_bs.type == 'S2':
+        if invalid_bs_type == 'S2':
             factor = decimal.Decimal('0.02')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'buy')
-        if invalid_bs.type == 'S3':
+        if invalid_bs_type == 'S3':
             factor = decimal.Decimal('0.02')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),

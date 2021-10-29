@@ -209,7 +209,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'logs/debug.log',
+            'filename': 'logs/clend.log',
         },
     },
     'loggers': {
