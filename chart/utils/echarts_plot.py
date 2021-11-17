@@ -71,7 +71,13 @@ def kline_pro(kline: List[dict],
               s1: List[dict] = None,
               s2: List[dict] = None,
               s3: List[dict] = None,
-              title: str = "缠论K线分析",
+              x_b1: List[dict] = None,
+              x_b2: List[dict] = None,
+              x_b3: List[dict] = None,
+              x_s1: List[dict] = None,
+              x_s2: List[dict] = None,
+              x_s3: List[dict] = None,
+              title: str = "缠论",
               t_seq: List[int] = None,
               width: str = "1400px",
               height: str = '580px') -> Grid:
@@ -98,6 +104,7 @@ def kline_pro(kline: List[dict],
     # 配置项设置
     # ------------------------------------------------------------------------------------------------------------------
     bg_color = "#1f212d"  # 背景
+    # bg_color = "#ffffff"  # 背景
     up_color = "#F9293E"
     down_color = "#00aa3b"
     zs_color = "#d3d7d4"
@@ -243,8 +250,9 @@ def kline_pro(kline: List[dict],
         xd_val = [x['xd'] for x in xd]
         chart_xd = Line()
         chart_xd.add_xaxis(xd_dts)
+        # rgba(37, 141, 54, 1.0)绿色
         chart_xd.add_yaxis(series_name="XD", y_axis=xd_val, is_selected=True, symbol="triangle", symbol_size=10,
-                           itemstyle_opts=opts.ItemStyleOpts(color="rgba(37, 141, 54, 1.0)", ))
+                           itemstyle_opts=opts.ItemStyleOpts(color="rgba(255, 255, 54, 1.0)", ))
 
         chart_xd.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
         chart_k = chart_k.overlap(chart_xd)
@@ -254,7 +262,7 @@ def kline_pro(kline: List[dict],
         for i in zs:
             items.append(
                 opts.MarkAreaItem(name='ZS', x=(i[0], i[1]), y=(i[2], i[3]), label_opts=opts.LabelOpts(is_show=False),
-                                  itemstyle_opts=opts.ItemStyleOpts(color="#d3d7d4", opacity=0.8)))
+                                  itemstyle_opts=opts.ItemStyleOpts(color="#d3d7d4", opacity=0.2)))
         chart_k.set_series_opts(markarea_opts=opts.MarkAreaOpts(is_silent=False, data=items))
 
     if bs:
@@ -280,6 +288,7 @@ def kline_pro(kline: List[dict],
             chart_s.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
             chart_k = chart_k.overlap(chart_s)
 
+    # 红色
     if b1:
         b_dts = [x['dt'] for x in b1 if x['mark'] == 'buy']
         if len(b_dts) > 0:
@@ -314,6 +323,8 @@ def kline_pro(kline: List[dict],
 
             chart_b.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
             chart_k = chart_k.overlap(chart_b)
+
+    # 绿色
     if s1:
         s_dts = [x['dt'] for x in s1 if x['mark'] == 'sell']
         if len(s_dts) > 0:
@@ -344,6 +355,76 @@ def kline_pro(kline: List[dict],
             chart_s.add_xaxis(s_dts)
             chart_s.add_yaxis(series_name="S3", y_axis=s_val, is_selected=True, symbol="pin", symbol_size=12,
                               itemstyle_opts=opts.ItemStyleOpts(color="#5c7a29", ))
+
+            chart_s.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
+            chart_k = chart_k.overlap(chart_s)
+
+    # 黄色
+    if x_b1:
+        b_dts = [x['dt'] for x in x_b1 if x['mark'] == 'buy']
+        if len(b_dts) > 0:
+            b_val = [x['price'] for x in x_b1 if x['mark'] == 'buy']
+            chart_b = Scatter()
+            chart_b.add_xaxis(b_dts)
+            chart_b.add_yaxis(series_name="XB1", y_axis=b_val, is_selected=True, symbol="arrow", symbol_size=8,
+                              itemstyle_opts=opts.ItemStyleOpts(color="#fab27b", ))
+
+            chart_b.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
+            chart_k = chart_k.overlap(chart_b)
+
+    if x_b2:
+        b_dts = [x['dt'] for x in x_b2 if x['mark'] == 'buy']
+        if len(b_dts) > 0:
+            b_val = [x['price'] for x in x_b2 if x['mark'] == 'buy']
+            chart_b = Scatter()
+            chart_b.add_xaxis(b_dts)
+            chart_b.add_yaxis(series_name="XB2", y_axis=b_val, is_selected=True, symbol="arrow", symbol_size=8,
+                              itemstyle_opts=opts.ItemStyleOpts(color="#f58220", ))
+
+            chart_b.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
+            chart_k = chart_k.overlap(chart_b)
+    if x_b3:
+        b_dts = [x['dt'] for x in x_b3 if x['mark'] == 'buy']
+        if len(b_dts) > 0:
+            b_val = [x['price'] for x in x_b3 if x['mark'] == 'buy']
+            chart_b = Scatter()
+            chart_b.add_xaxis(b_dts)
+            chart_b.add_yaxis(series_name="XB3", y_axis=b_val, is_selected=True, symbol="arrow", symbol_size=8,
+                              itemstyle_opts=opts.ItemStyleOpts(color="#843900", ))
+
+            chart_b.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
+            chart_k = chart_k.overlap(chart_b)
+    # 蓝色
+    if x_s1:
+        s_dts = [x['dt'] for x in x_s1 if x['mark'] == 'sell']
+        if len(s_dts) > 0:
+            s_val = [x['price'] for x in x_s1 if x['mark'] == 'sell']
+            chart_s = Scatter()
+            chart_s.add_xaxis(s_dts)
+            chart_s.add_yaxis(series_name="XS1", y_axis=s_val, is_selected=True, symbol="pin", symbol_size=12,
+                              itemstyle_opts=opts.ItemStyleOpts(color="#7bbfea", ))
+
+            chart_s.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
+            chart_k = chart_k.overlap(chart_s)
+    if x_s2:
+        s_dts = [x['dt'] for x in x_s2 if x['mark'] == 'sell']
+        if len(s_dts) > 0:
+            s_val = [x['price'] for x in x_s2 if x['mark'] == 'sell']
+            chart_s = Scatter()
+            chart_s.add_xaxis(s_dts)
+            chart_s.add_yaxis(series_name="XS2", y_axis=s_val, is_selected=True, symbol="pin", symbol_size=12,
+                              itemstyle_opts=opts.ItemStyleOpts(color="#009ad6", ))
+
+            chart_s.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
+            chart_k = chart_k.overlap(chart_s)
+    if x_s3:
+        s_dts = [x['dt'] for x in x_s3 if x['mark'] == 'sell']
+        if len(s_dts) > 0:
+            s_val = [x['price'] for x in x_s3 if x['mark'] == 'sell']
+            chart_s = Scatter()
+            chart_s.add_xaxis(s_dts)
+            chart_s.add_yaxis(series_name="XS3", y_axis=s_val, is_selected=True, symbol="pin", symbol_size=12,
+                              itemstyle_opts=opts.ItemStyleOpts(color="#145b7d", ))
 
             chart_s.set_global_opts(xaxis_opts=grid0_xaxis_opts, legend_opts=legend_not_show_opts)
             chart_k = chart_k.overlap(chart_s)

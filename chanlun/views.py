@@ -5,13 +5,11 @@ from datetime import datetime, timedelta
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from time import sleep
-from chanlun.hsdata import Data
 from chart.models import *
 from chart.views import bfd
 from django.db.models import Q
+from django.db import connection
 from clend.utils import handle_db_connections
-
-data = Data()
 
 import logging
 
@@ -105,14 +103,14 @@ def get_bars(request):
     if not symbol or not datalen or not day or not unit:
         return HttpResponse(None)
     # return HttpResponse(data.get_bars(symbol, datalen, day, unit))
-    return HttpResponse(data.get_bars('000028.SZ', 10, '2021-10-20', '1m'))
+    return HttpResponse("data.get_bars('000028.SZ', 10, '2021-10-20', '1m')")
 
 
 def get_all_securities(request):
     if request.method != 'GET':
         return HttpResponse('method error')
     date = request.GET.get("date")
-    return HttpResponse(data.get_all_securities(date))
+    return HttpResponse(date)
 
 
 cur = str(datetime.now().date())
@@ -142,8 +140,17 @@ def get_last_to_now_point(gain):
     start_t = datetime.now().date() - timedelta(days=match_days[list_freq_stock_id[0]])
     query = Point.objects.filter(
         Q(stock_id=list_freq_stock_id[1]) & Q(point__gt=start_t) & Q(level=match_point[list_freq_stock_id[0]]))
-
     return query
+
+
+def get_trade_from_point(point):
+    if not point:
+        return False
+    query = Trade.objects.filter(
+        Q(stock_id=point.stock_id) & Q(bs_time=point.point.strftime('%Y-%m-%d %H:%M')) & Q(is_success='Y') & Q(
+            level=point.level) & Q(
+            type=point.type))
+    return len(query) != 0
 
 
 def check_bs(gain):
@@ -161,7 +168,8 @@ def check_bs(gain):
     cur_set = set()
     cur_invalid_set = set()
     bs_list = []
-    invalid_bs_list = []
+    new_invalid_bs_list = []
+
     for i in query:
         if i.invalid_time:
             cur_invalid_set.add(i)
@@ -198,16 +206,18 @@ def check_bs(gain):
         invalid_bsset_list = list(invalid_bsset)
         invalid_bsset_list.sort(key=lambda x: x.point)
         logger.info(invalid_bsset_list)
-
         invalid_bs_list = list(invalid_bs_diff)
         invalid_bs_list.sort(key=lambda x: x.point)
         for last in invalid_bs_list:
-            logger.info("invalid_bs: " + last.stock_id + ":" + last.point.strftime(
-                '%Y-%m-%d %H:%M') + ":" + last.level + ":" + last.type)
+            if get_trade_from_point(last):
+                new_invalid_bs_list.append(last);
+                logger.info("invalid_bs: " + last.stock_id + ":" + last.point.strftime(
+                    '%Y-%m-%d %H:%M') + ":" + last.level + ":" + last.type)
 
     mp[valid_key] = cur_set
     mp[invalid_key] = cur_invalid_set
-    return bs_list, invalid_bs_list
+
+    return bs_list, new_invalid_bs_list
 
 
 def update_gain(gain, trade, bar, type):
@@ -257,14 +267,18 @@ def buy_sell(gain, bs, unit, bar, type):
         trade.fee = decimal.Decimal(trade.unit * 0.0002)
     else:
         trade.fee = decimal.Decimal(1.0)
-    yj = trade.total_money * 0.0003
+    yj = trade.total_money * decimal.Decimal(0.0003)
     if yj < 5.0:
         yj = 5
-    trade.fee += decimal.Decimal(yj)
+    trade.fee += yj
     trade.before_position = gain.cur_position
     trade.origin_funds = trade.cur_funds
     trade.is_success = 'Y'
-
+    if bs.invalid_time:
+        if bs.type.startswith('S'):
+            trade.type = bs.type.replace('S', 'B')
+        else:
+            trade.type = bs.type.replace('B', 'S')
     if not bs.invalid_time and not (
             (start_sw <= bs.point <= end_sw) or (start_xw <= bs.point <= end_xw)) and bs.level == '1分钟':
         bs_time = bs.point.strftime('%Y-%m-%d %H:%M:%S')
@@ -331,45 +345,40 @@ def trade(gain, symbol, bar):
                      bar,
                      'sell')
     for invalid_bs in invalid_bs_list:
-        invalid_bs_type = None
-        if invalid_bs.type.startswith('S'):
-            invalid_bs_type = invalid_bs.type.replace('S', 'B')
-        else:
-            invalid_bs_type = invalid_bs.type.replace('B', 'S')
         # 当前级别和买卖点级别不匹配
         if not gain.userid.startswith(match[invalid_bs.level]):
             return
-        if invalid_bs_type == 'B1':
+        if invalid_bs.type == 'B1':
             factor = decimal.Decimal('0.01')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'sell')
-        if invalid_bs_type == 'B2':
+        if invalid_bs.type == 'B2':
             factor = decimal.Decimal('0.02')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'sell')
-        if invalid_bs_type == 'B3':
+        if invalid_bs.type == 'B3':
             factor = decimal.Decimal('0.02')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'sell')
-        if invalid_bs_type == 'S1':
+        if invalid_bs.type == 'S1':
             factor = decimal.Decimal('0.01')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'buy')
-        if invalid_bs_type == 'S2':
+        if invalid_bs.type == 'S2':
             factor = decimal.Decimal('0.02')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
                      bar,
                      'buy')
-        if invalid_bs_type == 'S3':
+        if invalid_bs.type == 'S3':
             factor = decimal.Decimal('0.02')
             buy_sell(gain, invalid_bs,
                      int(gain.cur_funds * factor / decimal.Decimal(bar.close) / decimal.Decimal('100.0')),
@@ -432,6 +441,6 @@ def task():
 from apscheduler.schedulers.background import BackgroundScheduler
 
 scheduler = BackgroundScheduler()
-# scheduler.add_job(task, 'interval', seconds=1)
+# scheduler.add_job(task, 'interval', seconds=10)
 scheduler.add_job(task, 'interval', minutes=1)
 scheduler.start()

@@ -51,8 +51,10 @@ class KlineGenerator:
         self.max_count = max_count
         if freqs is None:
             # self.freqs = ['月线', '周线', '日线', '60分钟', '30分钟', '15分钟', '5分钟', '1分钟']
-            self.freqs = ['日线', '60分钟', '30分钟', '15分钟', '5分钟', '1分钟']
-            # self.freqs = ['1分钟']
+            # self.freqs = ['日线', '60分钟', '30分钟', '15分钟', '5分钟', '1分钟']
+            # self.freqs = ['日线', '30分钟', '5分钟', '1分钟']
+            # self.freqs = ['日线']
+            self.freqs = ['1分钟']
             self.freqs.reverse()
         else:
             self.freqs = freqs
@@ -77,13 +79,13 @@ class KlineGenerator:
             self.m1 = barlist
         if freq == "5m":
             self.m5 = barlist
-        if freq == "1m":
+        if freq == "15m":
             self.m15 = barlist
-        if freq == "5m":
+        if freq == "30m":
             self.m30 = barlist
-        if freq == "1m":
+        if freq == "60m":
             self.m60 = barlist
-        if freq == "5m":
+        if freq == "1d":
             self.D = barlist
 
     def init_kline(self, freq: [Freq, str], kline: List[RawBar]):

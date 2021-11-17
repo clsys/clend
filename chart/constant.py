@@ -13,11 +13,18 @@ freq_map = {
     "W": "周线",
     "M": "月线",
 }
-
 freq_inv = {v: k for k, v in freq_map.items()}
 
-freq_db = ['1m', '5m', '15m', '30m', '60m', '1d']
+freq_count = {'1m': 1, '5m': 5, "15m": 15, '30m': 30, '1h': 60, '1d': 240}
 
+freq_db = {
+    "1分钟": "1m",
+    "5分钟": "5m",
+    "15分钟": "15m",
+    "30分钟": "30m",
+    "60分钟": "60m",
+    "日线": "1d",
+}
 
 class Operate(Enum):
     # 持有状态

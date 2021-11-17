@@ -2,11 +2,12 @@
 Basic data structure used for general trading function in VN Trader.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from logging import INFO
 
-from trade.constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
+from trade.constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType, \
+    StopOrderStatus
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 
@@ -235,17 +236,17 @@ class ContractData(BaseData):
     size: int
     pricetick: float
 
-    min_volume: float = 1           # minimum trading volume of the contract
-    stop_supported: bool = False    # whether server supports stop order
-    net_position: bool = False      # whether gateways uses net position volume
-    history_data: bool = False      # whether gateways provides bar history data
+    min_volume: float = 1  # minimum trading volume of the contract
+    stop_supported: bool = False  # whether server supports stop order
+    net_position: bool = False  # whether gateways uses net position volume
+    history_data: bool = False  # whether gateways provides bar history data
 
     option_strike: float = 0
-    option_underlying: str = ""     # vt_symbol of underlying contract
+    option_underlying: str = ""  # vt_symbol of underlying contract
     option_type: OptionType = None
     option_expiry: datetime = None
     option_portfolio: str = ""
-    option_index: str = ""          # for identifying options with same strike price
+    option_index: str = ""  # for identifying options with same strike price
 
     def __post_init__(self):
         """"""
@@ -333,3 +334,19 @@ class HistoryRequest:
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+
+
+@dataclass
+class StopOrder:
+    vt_symbol: str
+    direction: Direction
+    offset: Offset
+    price: float
+    volume: float
+    stop_orderid: str
+    strategy_name: str
+    datetime: datetime
+    lock: bool = False
+    net: bool = False
+    vt_orderids: list = field(default_factory=list)
+    status: StopOrderStatus = StopOrderStatus.WAITING

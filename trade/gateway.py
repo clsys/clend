@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Sequence, Dict, List, Optional, Callable
 from copy import copy
-from constant import EventType
+from .constant import EventType
 from .event import Event, EventEngine
 
 from .object import (

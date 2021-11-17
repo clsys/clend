@@ -13,6 +13,5 @@ RUN apk update
 RUN apk add make automake gcc g++ python3-dev
 RUN python -m pip install --upgrade pip
 RUN apk add py3-numpy py3-pandas
-RUN pip install hs_udata-0.2.2-py3-none-any.whl && pip install --no-cache-dir -r requirements.txt
 
 CMD [ "python", "./manage.py", "runserver", "${IP}" ]

@@ -1,5 +1,26 @@
 from enum import Enum
 
+class EngineType(Enum):
+    LIVE = "实盘"
+    BACKTESTING = "回测"
+
+
+class Offset(Enum):
+    """
+    Offset of order/trade.
+    """
+    NONE = ""
+    OPEN = "开"
+    CLOSE = "平"
+    CLOSETODAY = "平今"
+    CLOSEYESTERDAY = "平昨"
+
+
+class StopOrderStatus(Enum):
+    WAITING = "等待中"
+    CANCELLED = "已撤销"
+    TRIGGERED = "已触发"
+
 
 class Direction(Enum):
     """

@@ -17,12 +17,13 @@ class BarFromDb:
 
     def get(self, freq, symbol):
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM 600809_XSHG_{freq}")
+            cursor.execute(f"SELECT * FROM 600809_XSHG_{freq} order by Date desc limit 10000")
             desc = cursor.description
             list = [
                 dict(zip([col[0] for col in desc], row))
                 for row in cursor.fetchall()
             ]
+            list.reverse()
             ret = []
             id = 0
             for k in list:

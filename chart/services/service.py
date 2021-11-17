@@ -1,4 +1,4 @@
-from chart.models import *
+from chart.models import Gain
 
 
 class Service:

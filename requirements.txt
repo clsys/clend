@@ -1,3 +1,4 @@
+vnpy_xtp==2.2.27.5
 APScheduler==3.8.0
 Jinja2==3.0.2
 TA_Lib==0.4.21
