@@ -4,11 +4,14 @@ from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Integer, String, MetaData, DateTime, Numeric, SMALLINT
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from clend.settings import SETTINGS
 
 metadata = MetaData()
 
 Base = declarative_base()
-engine = create_engine('mysql://root:@82.156.27.141/vnpy?charset=utf8&password=rooT@123', echo=True)
+engine = create_engine(
+    f'mysql://{SETTINGS["database.user"]}:@{SETTINGS["database.host"]}:{SETTINGS["database.port"]}/{SETTINGS["database.database"]}?charset=utf8&password={SETTINGS["database.password"]}',
+    echo=True)
 
 
 def make_bar(Base, table_name):

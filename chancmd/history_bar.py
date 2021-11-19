@@ -3,7 +3,10 @@ from chancmd.models import *
 from trade.object import TickData
 import warnings
 from sqlalchemy import exc as sa_exc
-auth('15618279970', '4sGEc25g')  # 账号是申请时所填写的手机号；密码为聚宽官网登录密码，新申请用户默认为手机号后6位
+from clend.settings import SETTINGS
+
+auth(SETTINGS["jq.username"], SETTINGS["jq.password"])  # 账号是申请时所填写的手机号；密码为聚宽官网登录密码，新申请用户默认为手机号后6位
+
 print(get_query_count())
 
 # 只保存1分钟数据
@@ -11,6 +14,7 @@ end_dt = '2021-11-11'
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", category=sa_exc.SAWarning)
     # code here...
+
 
 # 更新所有的股票列表
 def all_securites():

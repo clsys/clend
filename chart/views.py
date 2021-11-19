@@ -21,7 +21,7 @@ from chart.services.service import Service
 from chart.services.Barfromdb import BarFromDb
 from chanlun.strategies.mychan import JChan
 from chart.constant import freq_map
-
+from clend.settings import SETTINGS
 bfd = BarFromDb()
 service = Service()
 
@@ -41,8 +41,7 @@ max_count = 20
 max_len = 0
 inited = False
 
-auth('15618279970', '4sGEc25g')  # 账号是申请时所填写的手机号；密码为聚宽官网登录密码，新申请用户默认为手机号后6位
-
+auth(SETTINGS["jq.username"], SETTINGS["jq.password"])  # 账号是申请时所填写的手机号；密码为聚宽官网登录密码，新申请用户默认为手机号后6位
 
 def cache_get(key):
     r = redis.Redis(host='127.0.0.1', port=6379)

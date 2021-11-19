@@ -1,5 +1,8 @@
 # clend
 
+## 实现效果
+![chan_tu](docs/chan_tu.png)
+
 ## 安装依赖包
 conda 批量导出包含环境中所有组件的requirements.txt文件
 ````shell
@@ -12,8 +15,8 @@ FOR /F "delims=~" %f in (requirements.txt) DO conda install --yes "%f" #这个�
 ````
 ## 项目配置
 ### 项目运行需要的组件
-1. Mysql
-2. Redis
+1. Mysql(可选)
+2. Redis(可选)
 
 ### 下面两个配置
 #### Mysql配置
@@ -41,7 +44,7 @@ user = root
 password = root
 default-character-set = utf8
 ````
-#### gateway连接配置
+#### 数据通道连接配置
 在settings.py中找到
 ````python
 SETTING_FILENAME: Path = BASE_DIR.joinpath("clend").joinpath("setting.json")
@@ -54,6 +57,8 @@ gateway连接配置文件setting.json
   "log.level": 50,
   "log.console": true,
   "log.file": true,
+  "jq.username": "username",
+  "jq.password": "password",
   "datafeed.name": "udata",
   "datafeed.username": "token",
   "datafeed.password": "xxxx",
@@ -62,17 +67,17 @@ gateway连接配置文件setting.json
   "database.database": "xx",
   "database.host": "11.11.11.11",
   "database.port": 3306,
-  "database.user": "root",
-  "database.password": "root",
-  "xtp.username": "xxxxxxxxxx9",
-  "xtp.password": "xxxxxxxx",
+  "database.user": "user",
+  "database.password": "password",
+  "xtp.username": "username",
+  "xtp.password": "password",
   "xtp.clentid": 1,
   "xtp.maip": "11.11.11.11",
   "xtp.maport": 6002,
   "xtp.taip": "11.11.11.11",
   "xtp.taport": 6101,
   "xtp.protocol": "TCP",
-  "xtp.code": "xxxxxxxxxxxxxxxxxxxx9xxxxxx9112e"
+  "xtp.code": "code"
 }
 ````
 ## 运行项目

@@ -237,6 +237,9 @@ SETTINGS: Dict[str, Any] = {
     "email.sender": "",
     "email.receiver": "",
 
+    "jq.username": "",
+    "jq.password": "",
+
     "datafeed.name": "",
     "datafeed.username": "",
     "datafeed.password": "",
